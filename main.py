@@ -41,19 +41,33 @@ def anonymize_frame(frame, mode):
 
     for (x, y, w, h) in faces:
         if mode == "box":
-            # Draw a green rectangle around the face
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            # Draw a thick green rectangle around the face
+            # Last number is thickness — 3 is much more visible than 2
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+
+            # Also fill a semi-visible solid green overlay on top of the face
+            overlay = frame.copy()
+            cv2.rectangle(overlay, (x, y), (x + w, y + h), (0, 255, 0), -1)  # -1 = filled
+            cv2.addWeighted(overlay, 0.4, frame, 0.6, 0, frame)  # 40% green overlay
 
         elif mode == "blur":
-            # Extract the face region
-            face_region = frame[y:y + h, x:x + w]
+            # Expand the face region slightly so edges are fully covered
+            pad = 10
+            x1 = max(x - pad, 0)
+            y1 = max(y - pad, 0)
+            x2 = min(x + w + pad, frame.shape[1])
+            y2 = min(y + h + pad, frame.shape[0])
 
-            # Apply Gaussian blur — kernel must be odd numbers
-            # The larger the kernel, the stronger the blur
-            blurred = cv2.GaussianBlur(face_region, (51, 51), 0)
+            face_region = frame[y1:y2, x1:x2]
 
-            # Put the blurred region back into the frame
-            frame[y:y + h, x:x + w] = blurred
+            # Apply pixelation effect — shrink then enlarge = heavy blur
+            small = cv2.resize(face_region, (10, 10), interpolation=cv2.INTER_LINEAR)
+            pixelated = cv2.resize(small, (x2 - x1, y2 - y1), interpolation=cv2.INTER_NEAREST)
+
+            # Also apply Gaussian blur on top of pixelation for extra strength
+            blurred = cv2.GaussianBlur(pixelated, (51, 51), 30)
+
+            frame[y1:y2, x1:x2] = blurred
 
     return frame, len(faces)
 

@@ -1,6 +1,6 @@
 # Face Detection & Anonymization CLI Tool
 
-A command-line tool that detects human faces in images and videos using OpenCV's Haar Cascade classifier, and anonymizes them by either drawing bounding boxes or applying Gaussian blur.
+A command-line tool that detects human faces in images and videos using OpenCV's Haar Cascade classifier, and anonymizes them by either drawing bounding boxes or applying Gaussian blur. Built for the course - CSE3010 (Computer Vision)
 
 ---
 
